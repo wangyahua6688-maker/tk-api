@@ -1,0 +1,12 @@
+Name: tk-api-bff
+Host: 0.0.0.0
+Port: 8088
+Timeout: 8000
+
+BusinessRpc:
+  Endpoints:
+    - 127.0.0.1:9102
+
+UserRpc:
+  Endpoints:
+    - 127.0.0.1:9103
