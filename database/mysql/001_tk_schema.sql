@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS tk_users (
   nickname VARCHAR(64) NOT NULL DEFAULT '' COMMENT '昵称',
   avatar VARCHAR(255) NOT NULL DEFAULT '' COMMENT '头像地址',
   user_type VARCHAR(20) NOT NULL DEFAULT 'natural' COMMENT '用户类型：natural自然用户；official官方账号；robot机器人账号',
+  fans_count BIGINT NOT NULL DEFAULT 0 COMMENT '粉丝数',
+  following_count BIGINT NOT NULL DEFAULT 0 COMMENT '关注数',
+  growth_value BIGINT NOT NULL DEFAULT 0 COMMENT '成长值',
+  read_post_count BIGINT NOT NULL DEFAULT 0 COMMENT '阅读帖子数',
   status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1启用；0停用',
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
@@ -16,6 +20,12 @@ CREATE TABLE IF NOT EXISTS tk_users (
   UNIQUE KEY uk_tk_users_username (username),
   KEY idx_tk_users_user_type (user_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户表';
+
+-- 兼容历史库：若旧版本缺失用户统计字段，自动补齐。
+ALTER TABLE tk_users ADD COLUMN IF NOT EXISTS fans_count BIGINT NOT NULL DEFAULT 0 COMMENT '粉丝数' AFTER user_type;
+ALTER TABLE tk_users ADD COLUMN IF NOT EXISTS following_count BIGINT NOT NULL DEFAULT 0 COMMENT '关注数' AFTER fans_count;
+ALTER TABLE tk_users ADD COLUMN IF NOT EXISTS growth_value BIGINT NOT NULL DEFAULT 0 COMMENT '成长值' AFTER following_count;
+ALTER TABLE tk_users ADD COLUMN IF NOT EXISTS read_post_count BIGINT NOT NULL DEFAULT 0 COMMENT '阅读帖子数' AFTER growth_value;
 
 CREATE TABLE IF NOT EXISTS tk_banner (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"tk-api/internal/shared/httpresp"
+	"tk-common/utils/httpresp"
 
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -30,8 +30,12 @@ func RegisterHandlers(server *rest.Server, h *PublicHandler) {
 		{Method: http.MethodGet, Path: "/api/v1/public/lottery-categories", Handler: h.LotteryCategories},
 		// 论坛接口新主路径：/public/user/*
 		{Method: http.MethodGet, Path: "/api/v1/public/user/topics", Handler: h.TopicList},
+		{Method: http.MethodGet, Path: "/api/v1/public/user/topics/:id/detail", Handler: h.TopicDetail},
+		{Method: http.MethodGet, Path: "/api/v1/public/user/users/:id/history-topics", Handler: h.AuthorHistory},
 		// 兼容别名：保留 /public/forum/*，后续灰度下线。
 		{Method: http.MethodGet, Path: "/api/v1/public/forum/topics", Handler: h.TopicList},
+		{Method: http.MethodGet, Path: "/api/v1/public/forum/topics/:id/detail", Handler: h.TopicDetail},
+		{Method: http.MethodGet, Path: "/api/v1/public/forum/users/:id/history-topics", Handler: h.AuthorHistory},
 		// 高手推荐接口新主路径：/public/user/*。
 		{Method: http.MethodGet, Path: "/api/v1/public/user/expert-boards", Handler: h.ExpertBoards},
 		// 兼容别名：保留 /public/forum/*。

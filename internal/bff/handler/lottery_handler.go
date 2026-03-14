@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"tk-api/internal/shared/httpresp"
+	"tk-common/utils/codes"
+	"tk-common/utils/httpresp"
 	tkv1 "tk-proto/tk/v1"
 )
 
@@ -112,11 +113,11 @@ func (h *PublicHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.svcCtx.Business.VoteRecord(r.Context(), &tkv1.VoteRecordRequest{
 		LotteryInfoId: id,
 		// DeviceID 优先从请求头读取，兼容 query 兜底。
-		DeviceId:      getDeviceID(r),
+		DeviceId: getDeviceID(r),
 		// IP 用于风控与审计。
-		ClientIp:      getClientIP(r),
+		ClientIp: getClientIP(r),
 		// UA 参与指纹计算（DeviceID 缺失时）。
-		UserAgent:     strings.TrimSpace(r.UserAgent()),
+		UserAgent: strings.TrimSpace(r.UserAgent()),
 	})
 	writeRPCReply(w, resp, err)
 }
@@ -135,12 +136,12 @@ func (h *PublicHandler) Vote(w http.ResponseWriter, r *http.Request) {
 	// 读取请求体并限制最大大小，避免异常大包攻击。
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil {
-		httpresp.Fail(w, http.StatusBadRequest, 40001, "invalid request body")
+		httpresp.Fail(w, http.StatusBadRequest, codes.InvalidRequestBody, "invalid request body")
 		return
 	}
 	// option_id 必填且必须是正整数。
 	if len(body) == 0 || json.Unmarshal(body, &reqBody) != nil || reqBody.OptionID == 0 {
-		httpresp.Fail(w, http.StatusBadRequest, 40002, "option_id is required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.OptionIDRequired, "option_id is required")
 		return
 	}
 
@@ -149,9 +150,9 @@ func (h *PublicHandler) Vote(w http.ResponseWriter, r *http.Request) {
 		LotteryInfoId: id,
 		OptionId:      reqBody.OptionID,
 		// 指纹参数交给业务域做限流与去重。
-		DeviceId:      getDeviceID(r),
-		ClientIp:      getClientIP(r),
-		UserAgent:     strings.TrimSpace(r.UserAgent()),
+		DeviceId:  getDeviceID(r),
+		ClientIp:  getClientIP(r),
+		UserAgent: strings.TrimSpace(r.UserAgent()),
 	})
 	writeRPCReply(w, resp, err)
 }

@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"tk-api/internal/shared/httpresp"
+	"tk-common/utils/codes"
+	"tk-common/utils/httpresp"
 	tkv1 "tk-proto/tk/v1"
-
-	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 // writeRPCReply 统一处理 gRPC 返回并转成 HTTP 响应。
@@ -19,20 +18,17 @@ import (
 func writeRPCReply(w http.ResponseWriter, resp *tkv1.JsonDataReply, err error) {
 	// gRPC 连接失败/超时等网络级错误。
 	if err != nil {
-		httpresp.Fail(w, http.StatusBadGateway, 50201, "upstream service unavailable")
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamUnavailable, "upstream service unavailable")
 		return
 	}
 	// 下游空响应兜底。
 	if resp == nil {
-		httpresp.Fail(w, http.StatusBadGateway, 50202, "empty upstream response")
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
 		return
 	}
 	// 业务错误：保持 HTTP 200，仅透传业务码与业务文案。
 	if resp.GetCode() != 0 {
-		httpx.OkJson(w, httpresp.Envelope{
-			Code: int(resp.GetCode()),
-			Msg:  strings.TrimSpace(resp.GetMsg()),
-		})
+		httpresp.BizFail(w, int(resp.GetCode()), strings.TrimSpace(resp.GetMsg()))
 		return
 	}
 
@@ -42,7 +38,7 @@ func writeRPCReply(w http.ResponseWriter, resp *tkv1.JsonDataReply, err error) {
 	if raw != "" {
 		// 下游返回格式异常时，明确抛网关级错误。
 		if err := json.Unmarshal([]byte(raw), &data); err != nil {
-			httpresp.Fail(w, http.StatusBadGateway, 50203, "invalid upstream payload")
+			httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamBadPayload, "invalid upstream payload")
 			return
 		}
 	}

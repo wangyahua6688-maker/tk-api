@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"tk-common/utils/codes"
+	"tk-common/utils/httpresp"
 	tkv1 "tk-proto/tk/v1"
-
-	"tk-api/internal/shared/httpresp"
 )
 
 // SendSMSCode 发送登录/注册短信验证码。
@@ -20,14 +20,14 @@ func (h *PublicHandler) SendSMSCode(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil || len(body) == 0 || json.Unmarshal(body, &reqBody) != nil {
-		httpresp.Fail(w, http.StatusBadRequest, 40041, "invalid request body")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthInvalidBodySendSMS, "invalid request body")
 		return
 	}
 
 	// 2) 基础参数校验。
 	phone := strings.TrimSpace(reqBody.Phone)
 	if phone == "" {
-		httpresp.Fail(w, http.StatusBadRequest, 40042, "phone is required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthPhoneRequired, "phone is required")
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *PublicHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) 
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil || len(body) == 0 || json.Unmarshal(body, &reqBody) != nil {
-		httpresp.Fail(w, http.StatusBadRequest, 40043, "invalid request body")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthInvalidBodyReg, "invalid request body")
 		return
 	}
 
@@ -58,7 +58,7 @@ func (h *PublicHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) 
 	phone := strings.TrimSpace(reqBody.Phone)
 	password := strings.TrimSpace(reqBody.Password)
 	if phone == "" || password == "" {
-		httpresp.Fail(w, http.StatusBadRequest, 40044, "phone/password required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthPhonePwdRequired, "phone/password required")
 		return
 	}
 
@@ -81,7 +81,7 @@ func (h *PublicHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) 
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil || len(body) == 0 || json.Unmarshal(body, &reqBody) != nil {
-		httpresp.Fail(w, http.StatusBadRequest, 40045, "invalid request body")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthInvalidBodyLogin, "invalid request body")
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *PublicHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) 
 	phone := strings.TrimSpace(reqBody.Phone)
 	password := strings.TrimSpace(reqBody.Password)
 	if phone == "" || password == "" {
-		httpresp.Fail(w, http.StatusBadRequest, 40046, "phone/password required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthPhonePwdNeed, "phone/password required")
 		return
 	}
 
@@ -110,7 +110,7 @@ func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil || len(body) == 0 || json.Unmarshal(body, &reqBody) != nil {
-		httpresp.Fail(w, http.StatusBadRequest, 40047, "invalid request body")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthInvalidBodySMS, "invalid request body")
 		return
 	}
 
@@ -118,7 +118,7 @@ func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 	phone := strings.TrimSpace(reqBody.Phone)
 	smsCode := strings.TrimSpace(reqBody.SMSCode)
 	if phone == "" || smsCode == "" {
-		httpresp.Fail(w, http.StatusBadRequest, 40048, "phone/sms_code required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthPhoneCodeRequired, "phone/sms_code required")
 		return
 	}
 
@@ -140,7 +140,7 @@ func (h *PublicHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 	// 3) 参数校验。
 	if token == "" {
-		httpresp.Fail(w, http.StatusBadRequest, 40049, "access token required")
+		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthAccessTokenNeed, "access token required")
 		return
 	}
 

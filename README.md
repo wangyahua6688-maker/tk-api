@@ -9,7 +9,7 @@
 
 - BFF：`go-zero`（`rest` + `zrpc`）
 - gRPC 协议：`tk-proto/proto/tk/v1/*.proto`
-- 共享模型：`tk-shared/models`
+- 共享模型：`tk-common/models`
 
 ## 目录
 
@@ -41,7 +41,7 @@ tk-api/
   - 一个仓库集中管理 gRPC 契约，避免不同服务各自维护 proto 导致版本漂移；
   - `tk-api/tk-business/tk-user` 都依赖同一份接口定义，升级与回滚更可控；
   - 后续如新增 `tk-admin-api` 或外部消费方，可直接复用协议模块。
-- `tk-shared` 独立的原因：
+- `tk-common` 独立的原因：
   - `tk-business` 与 `tk-admin` 使用相同表模型，放公共模块可避免重复维护；
   - 字段变更只改一处，降低“模型不一致”引发的线上问题。
 

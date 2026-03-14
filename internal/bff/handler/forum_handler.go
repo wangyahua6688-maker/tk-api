@@ -22,10 +22,17 @@ func (h *PublicHandler) TopicList(w http.ResponseWriter, r *http.Request) {
 	limit := parseIntOrDefault(r.URL.Query().Get("limit"), 20)
 	feed := strings.TrimSpace(r.URL.Query().Get("feed"))
 	keyword := strings.TrimSpace(r.URL.Query().Get("keyword"))
+	issue := strings.TrimSpace(r.URL.Query().Get("issue"))
+	year := parseIntOrDefault(r.URL.Query().Get("year"), 0)
+	if strings.TrimSpace(r.URL.Query().Get("year")) == "" {
+		year = 0
+	}
 	resp, err := h.svcCtx.User.ForumTopics(r.Context(), &tkv1.ForumTopicsRequest{
-		Limit: int32(limit),
-		Feed:  feed,
+		Limit:   int32(limit),
+		Feed:    feed,
 		Keyword: keyword,
+		Issue:   issue,
+		Year:    int32(year),
 	})
 	writeRPCReply(w, resp, err)
 }
