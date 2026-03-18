@@ -16,10 +16,12 @@ import (
 func Run() {
 	// 1) 读取启动参数（配置文件路径）。
 	configFile := flag.String("f", "etc/tk-api.yaml", "config file")
+	// 调用flag.Parse完成当前处理。
 	flag.Parse()
 
 	// 2) 加载网关配置：HTTP 监听 + 下游 RPC 地址。
 	var c config.Config
+	// 调用conf.MustLoad完成当前处理。
 	conf.MustLoad(*configFile, &c)
 
 	// 3) 初始化服务上下文（gRPC 客户端）。
@@ -29,11 +31,13 @@ func Run() {
 
 	// 5) 启动 go-zero REST 服务（启用 CORS，便于本地联调）。
 	server := rest.MustNewServer(c.RestConf, rest.WithCors("*"))
+	// 注册延迟执行逻辑。
 	defer server.Stop()
 
 	// 6) 注册 HTTP 路由。
 	handler.RegisterHandlers(server, publicHandler)
 	// 7) 输出启动日志并进入监听。
 	logx.Infof("starting tk-api bff at %s:%d", c.Host, c.Port)
+	// 调用server.Start完成当前处理。
 	server.Start()
 }

@@ -11,15 +11,20 @@ import (
 func (h *PublicHandler) HomeOverview(w http.ResponseWriter, r *http.Request) {
 	// 首页能力已并入 business 服务，BFF 直接调用业务域 RPC。
 	resp, err := h.svcCtx.Business.HomeOverview(r.Context(), &tkv1.HomeOverviewRequest{})
+	// 调用writeRPCReply完成当前处理。
 	writeRPCReply(w, resp, err)
 }
 
 // LotteryCategories 图库分类搜索接口：支持 keyword 模糊筛选分类。
 func (h *PublicHandler) LotteryCategories(w http.ResponseWriter, r *http.Request) {
+	// 定义并初始化当前变量。
 	keyword := strings.TrimSpace(r.URL.Query().Get("keyword"))
+	// 定义并初始化当前变量。
 	resp, err := h.svcCtx.Business.LotteryCategories(r.Context(), &tkv1.CategoryLibraryRequest{
+		// 处理当前语句逻辑。
 		Keyword: keyword,
 	})
+	// 调用writeRPCReply完成当前处理。
 	writeRPCReply(w, resp, err)
 }
 
@@ -27,8 +32,11 @@ func (h *PublicHandler) LotteryCategories(w http.ResponseWriter, r *http.Request
 func (h *PublicHandler) LiveScenePage(w http.ResponseWriter, r *http.Request) {
 	// 支持可选 query：special_lottery_id。
 	sid := parseIntOrDefault(strings.TrimSpace(r.URL.Query().Get("special_lottery_id")), 0)
+	// 定义并初始化当前变量。
 	resp, err := h.svcCtx.Business.LiveScenePage(r.Context(), &tkv1.IDRequest{
+		// 调用uint64完成当前处理。
 		Id: uint64(sid),
 	})
+	// 调用writeRPCReply完成当前处理。
 	writeRPCReply(w, resp, err)
 }

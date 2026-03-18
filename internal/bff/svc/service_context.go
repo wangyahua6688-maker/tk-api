@@ -17,6 +17,7 @@ type ServiceContext struct {
 	User tkv1.UserServiceClient
 }
 
+// NewServiceContext 创建ServiceContext实例。
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化业务域客户端。
 	businessClient := zrpc.MustNewClient(c.BusinessRpc)
@@ -26,8 +27,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 将两个领域客户端注入 BFF 上下文，供 handler 统一复用。
 	// 注意：这里不做业务逻辑，只做依赖装配。
 	return &ServiceContext{
-		Config:   c,
+		// 处理当前语句逻辑。
+		Config: c,
+		// 调用tkv1.NewBusinessServiceClient完成当前处理。
 		Business: tkv1.NewBusinessServiceClient(businessClient.Conn()),
-		User:     tkv1.NewUserServiceClient(userClient.Conn()),
+		// 调用tkv1.NewUserServiceClient完成当前处理。
+		User: tkv1.NewUserServiceClient(userClient.Conn()),
 	}
 }
