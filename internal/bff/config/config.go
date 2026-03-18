@@ -10,4 +10,7 @@ type Config struct {
 	rest.RestConf                    // HTTP 服务配置（监听地址、端口、中间件）。
 	BusinessRpc   zrpc.RpcClientConf // 业务域 RPC 客户端（首页、开奖、投票、现场页等）。
 	UserRpc       zrpc.RpcClientConf // 用户域 RPC 客户端（论坛、评论、用户态相关能力）。
+	CORS          struct {           // CORS 白名单配置分组。
+		AllowedOrigins []string // 允许跨域来源列表（为空时不启用 CORS）。
+	} // CORS 配置。
 }

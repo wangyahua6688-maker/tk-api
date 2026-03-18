@@ -187,14 +187,9 @@ func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 
 // Profile 获取当前登录用户资料。
 func (h *PublicHandler) Profile(w http.ResponseWriter, r *http.Request) {
-	// 1) 优先从 Authorization 头读取 Bearer token。
+	// 1) 仅从 Authorization 头读取 Bearer token。
 	token := strings.TrimSpace(r.Header.Get("Authorization"))
-	// 2) 兼容 query 传入 access_token（便于联调）。
-	if token == "" {
-		// 更新当前变量或字段值。
-		token = strings.TrimSpace(r.URL.Query().Get("access_token"))
-	}
-	// 3) 参数校验。
+	// 2) 参数校验。
 	if token == "" {
 		// 调用httpresp.Fail完成当前处理。
 		httpresp.Fail(w, http.StatusBadRequest, codes.UserAuthAccessTokenNeed, "access token required")
@@ -202,7 +197,7 @@ func (h *PublicHandler) Profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4) 调用用户域资料 RPC。
+	// 3) 调用用户域资料 RPC。
 	resp, rpcErr := h.svcCtx.User.Profile(r.Context(), &tkv1.AuthProfileRequest{
 		// 处理当前语句逻辑。
 		AccessToken: token,
