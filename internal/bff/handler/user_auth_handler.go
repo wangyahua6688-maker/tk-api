@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"tk-common/utils/codes"
-	"tk-common/utils/httpresp"
-	tkv1 "tk-proto/gen/go/tk/v1"
+	"github.com/wangyahua6688-maker/tk-common/utils/codes"
+	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
+	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
 )
 
 // SendSMSCode 发送登录/注册短信验证码。

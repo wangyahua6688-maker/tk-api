@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"tk-common/utils/httpresp"
+	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
 
 	"github.com/zeromicro/go-zero/rest"
 )

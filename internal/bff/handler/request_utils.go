@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"tk-common/utils/codes"
-	"tk-common/utils/httpresp"
-	"tk-common/utils/reqx"
+	"github.com/wangyahua6688-maker/tk-common/utils/codes"
+	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
+	"github.com/wangyahua6688-maker/tk-common/utils/reqx"
 )
 
 // mustPathID 从 REST 路径中提取 ID（例如 /lottery-info/:id/detail）。

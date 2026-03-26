@@ -1,8 +1,8 @@
 package svc
 
 import (
+	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
 	"tk-api/internal/bff/config"
-	tkv1 "tk-proto/gen/go/tk/v1"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )

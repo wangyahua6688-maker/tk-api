@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"tk-common/utils/codes"
-	"tk-common/utils/httpresp"
-	tkv1 "tk-proto/gen/go/tk/v1"
+	"github.com/wangyahua6688-maker/tk-common/utils/codes"
+	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
+	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
 )
 
 // writeRPCReply 统一处理 gRPC 返回并转成 HTTP 响应。

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	tkv1 "tk-proto/gen/go/tk/v1"
+	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
 )
 
 // ExpertBoards 高手推荐榜单接口。
