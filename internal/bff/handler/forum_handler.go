@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	tkv1 "tk-proto/tk/v1"
+	tkv1 "tk-proto/gen/go/tk/v1"
 )
 
 // TopicList 用户域帖子列表接口（旧名兼容，实际走新 ForumTopics RPC）。

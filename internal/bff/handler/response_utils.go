@@ -7,7 +7,7 @@ import (
 
 	"tk-common/utils/codes"
 	"tk-common/utils/httpresp"
-	tkv1 "tk-proto/tk/v1"
+	tkv1 "tk-proto/gen/go/tk/v1"
 )
 
 // writeRPCReply 统一处理 gRPC 返回并转成 HTTP 响应。

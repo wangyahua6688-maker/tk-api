@@ -2,7 +2,7 @@ package svc
 
 import (
 	"tk-api/internal/bff/config"
-	tkv1 "tk-proto/tk/v1"
+	tkv1 "tk-proto/gen/go/tk/v1"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )

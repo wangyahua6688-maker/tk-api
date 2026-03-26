@@ -8,7 +8,7 @@
 ## 使用框架
 
 - BFF：`go-zero`（`rest` + `zrpc`）
-- gRPC 协议：`tk-proto/proto/tk/v1/*.proto`
+- gRPC 协议：`tk-proto/gen/go/tk/v1/*.pb.go（proto 源文件位于 tk-proto/proto/tk/v1/*.proto）`
 - 共享模型：`tk-common/models`
 
 ## 目录

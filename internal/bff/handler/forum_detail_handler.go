@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	tkv1 "tk-proto/tk/v1"
+	tkv1 "tk-proto/gen/go/tk/v1"
 )
 
 // TopicDetail 论坛帖子详情接口（新路径 + 兼容别名）。

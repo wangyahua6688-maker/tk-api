@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	tkv1 "tk-proto/tk/v1"
+	tkv1 "tk-proto/gen/go/tk/v1"
 )
 
 // HomeOverview 首页聚合接口：返回 banner、广播、切换彩种、外链等首页结构化数据。
