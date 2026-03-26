@@ -1,6 +1,6 @@
 module tk-api
 
-go 1.24.0
+go 1.24
 
 //replace github.com/wangyahua6688-maker/tk-proto => ../tk-proto
 //replace github.com/wangyahua6688-maker/tk-common => ../tk-common
@@ -23,7 +23,7 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	github.com/wangyahua6688-maker/tk-common v1.0.5
+	github.com/wangyahua6688-maker/tk-common v1.0.6
 	github.com/wangyahua6688-maker/tk-proto v1.0.2
 	github.com/zeromicro/go-zero v1.10.0
 	golang.org/x/arch v0.8.0 // indirect
