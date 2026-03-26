@@ -5,11 +5,11 @@ Timeout: 8000
 
 BusinessRpc:
   Endpoints:
-    - 127.0.0.1:9102
+    - tk-business:9102
 
 UserRpc:
   Endpoints:
-    - 127.0.0.1:9103
+    - tk-user:9103
 
 CORS:
   AllowedOrigins:
