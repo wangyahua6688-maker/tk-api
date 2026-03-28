@@ -4,13 +4,14 @@ import (
 	"flag"
 	"strings"
 
+	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
 	"tk-api/internal/bff/config"
 	"tk-api/internal/bff/handler"
-	"tk-api/internal/bff/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 // Run 启动 tk-api BFF 服务。
@@ -25,10 +26,17 @@ func Run() {
 	// 调用conf.MustLoad完成当前处理。
 	conf.MustLoad(*configFile, &c)
 
-	// 3) 初始化服务上下文（gRPC 客户端）。
-	svcCtx := svc.NewServiceContext(c)
-	// 4) 创建公开路由处理器。
-	publicHandler := handler.NewPublicHandler(svcCtx)
+	// 3) 初始化领域 gRPC 客户端。
+	businessClient := zrpc.MustNewClient(c.BusinessRpc)
+	userClient := zrpc.MustNewClient(c.UserRpc)
+	businessRPC := tkv1.NewBusinessServiceClient(businessClient.Conn())
+	userRPC := tkv1.NewUserServiceClient(userClient.Conn())
+	// 4) 按模块创建处理器。
+	homeHandler := handler.NewHomeHandler(businessRPC)
+	lotteryHandler := handler.NewLotteryHandler(businessRPC)
+	forumHandler := handler.NewForumHandler(userRPC)
+	expertHandler := handler.NewExpertHandler(userRPC)
+	authHandler := handler.NewUserAuthHandler(userRPC)
 
 	// 5) 构建 REST 启动选项：仅对白名单来源启用 CORS。
 	serverOptions := make([]rest.RunOption, 0, 1)
@@ -45,7 +53,7 @@ func Run() {
 	defer server.Stop()
 
 	// 7) 注册 HTTP 路由。
-	handler.RegisterHandlers(server, publicHandler)
+	handler.RegisterHandlers(server, homeHandler, lotteryHandler, forumHandler, expertHandler, authHandler)
 	// 8) 输出启动日志并进入监听。
 	logx.Infof("starting tk-api bff at %s:%d", c.Host, c.Port)
 	// 调用server.Start完成当前处理。

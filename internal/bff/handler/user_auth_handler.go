@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,10 +10,30 @@ import (
 	"github.com/wangyahua6688-maker/tk-common/utils/codes"
 	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
 	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
+	"google.golang.org/grpc"
 )
 
+// authUserClient 定义认证模块依赖的用户域接口。
+type authUserClient interface {
+	SendSMSCode(ctx context.Context, in *tkv1.AuthSendCodeRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	RegisterByPhone(ctx context.Context, in *tkv1.AuthRegisterRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	LoginByPassword(ctx context.Context, in *tkv1.AuthPasswordLoginRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	LoginBySMS(ctx context.Context, in *tkv1.AuthSMSLoginRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	Profile(ctx context.Context, in *tkv1.AuthProfileRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+}
+
+// UserAuthHandler 负责短信、注册、登录、资料读取接口。
+type UserAuthHandler struct {
+	user authUserClient
+}
+
+// NewUserAuthHandler 创建用户鉴权模块处理器。
+func NewUserAuthHandler(user authUserClient) *UserAuthHandler {
+	return &UserAuthHandler{user: user}
+}
+
 // SendSMSCode 发送登录/注册短信验证码。
-func (h *PublicHandler) SendSMSCode(w http.ResponseWriter, r *http.Request) {
+func (h *UserAuthHandler) SendSMSCode(w http.ResponseWriter, r *http.Request) {
 	// 1) 解析请求体（限制 1MB）。
 	var reqBody struct {
 		// 处理当前语句逻辑。
@@ -41,7 +62,7 @@ func (h *PublicHandler) SendSMSCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3) 转发到用户域认证 RPC。
-	resp, rpcErr := h.svcCtx.User.SendSMSCode(r.Context(), &tkv1.AuthSendCodeRequest{
+	resp, rpcErr := h.user.SendSMSCode(withClientIPOutgoingContext(r.Context()), &tkv1.AuthSendCodeRequest{
 		// 处理当前语句逻辑。
 		Phone: phone,
 		// 调用strings.TrimSpace完成当前处理。
@@ -52,7 +73,7 @@ func (h *PublicHandler) SendSMSCode(w http.ResponseWriter, r *http.Request) {
 }
 
 // RegisterByPhone 手机号注册。
-func (h *PublicHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) {
+func (h *UserAuthHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) {
 	// 1) 解析请求体（限制 1MB）。
 	var reqBody struct {
 		// 处理当前语句逻辑。
@@ -87,7 +108,7 @@ func (h *PublicHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// 3) 转发用户域注册 RPC。
-	resp, rpcErr := h.svcCtx.User.RegisterByPhone(r.Context(), &tkv1.AuthRegisterRequest{
+	resp, rpcErr := h.user.RegisterByPhone(withClientIPOutgoingContext(r.Context()), &tkv1.AuthRegisterRequest{
 		// 处理当前语句逻辑。
 		Phone: phone,
 		// 处理当前语句逻辑。
@@ -102,7 +123,7 @@ func (h *PublicHandler) RegisterByPhone(w http.ResponseWriter, r *http.Request) 
 }
 
 // LoginByPassword 手机号+密码登录。
-func (h *PublicHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) {
+func (h *UserAuthHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) {
 	// 1) 解析请求体。
 	var reqBody struct {
 		// 处理当前语句逻辑。
@@ -133,7 +154,7 @@ func (h *PublicHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// 3) 调用用户域登录 RPC。
-	resp, rpcErr := h.svcCtx.User.LoginByPassword(r.Context(), &tkv1.AuthPasswordLoginRequest{
+	resp, rpcErr := h.user.LoginByPassword(withClientIPOutgoingContext(r.Context()), &tkv1.AuthPasswordLoginRequest{
 		// 处理当前语句逻辑。
 		Phone: phone,
 		// 处理当前语句逻辑。
@@ -144,7 +165,7 @@ func (h *PublicHandler) LoginByPassword(w http.ResponseWriter, r *http.Request) 
 }
 
 // LoginBySMS 手机号+验证码登录。
-func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
+func (h *UserAuthHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 	// 1) 解析请求体。
 	var reqBody struct {
 		// 处理当前语句逻辑。
@@ -175,7 +196,7 @@ func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3) 调用用户域短信登录 RPC。
-	resp, rpcErr := h.svcCtx.User.LoginBySMS(r.Context(), &tkv1.AuthSMSLoginRequest{
+	resp, rpcErr := h.user.LoginBySMS(withClientIPOutgoingContext(r.Context()), &tkv1.AuthSMSLoginRequest{
 		// 处理当前语句逻辑。
 		Phone: phone,
 		// 处理当前语句逻辑。
@@ -186,7 +207,7 @@ func (h *PublicHandler) LoginBySMS(w http.ResponseWriter, r *http.Request) {
 }
 
 // Profile 获取当前登录用户资料。
-func (h *PublicHandler) Profile(w http.ResponseWriter, r *http.Request) {
+func (h *UserAuthHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	// 1) 仅从 Authorization 头读取 Bearer token。
 	token := strings.TrimSpace(r.Header.Get("Authorization"))
 	// 2) 参数校验。
@@ -198,7 +219,7 @@ func (h *PublicHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3) 调用用户域资料 RPC。
-	resp, rpcErr := h.svcCtx.User.Profile(r.Context(), &tkv1.AuthProfileRequest{
+	resp, rpcErr := h.user.Profile(r.Context(), &tkv1.AuthProfileRequest{
 		// 处理当前语句逻辑。
 		AccessToken: token,
 	})

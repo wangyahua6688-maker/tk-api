@@ -5,10 +5,14 @@ import (
 	"net"
 	"net/http"
 	"strings"
+
+	"google.golang.org/grpc/metadata"
 )
 
 // clientIPKey 是注入 context 的客户端 IP 的 key 类型（防止 key 碰撞）。
 type clientIPKey struct{}
+
+const clientIPMetadataKey = "x-client-ip"
 
 // withClientIP 将客户端真实 IP 写入 context，供下游 gRPC 调用链使用。
 // 真实 IP 解析优先级：X-Forwarded-For → X-Real-IP → RemoteAddr
@@ -59,6 +63,15 @@ func ClientIPFromContext(ctx context.Context) string {
 		return ip
 	}
 	return ""
+}
+
+// withClientIPOutgoingContext 将客户端 IP 注入 gRPC outgoing metadata。
+func withClientIPOutgoingContext(ctx context.Context) context.Context {
+	ip := strings.TrimSpace(ClientIPFromContext(ctx))
+	if ip == "" {
+		return ctx
+	}
+	return metadata.AppendToOutgoingContext(ctx, clientIPMetadataKey, ip)
 }
 
 // injectClientIPMiddleware 是一个 HTTP 中间件，将客户端 IP 注入请求 context。

@@ -8,6 +8,8 @@ import (
 	"github.com/wangyahua6688-maker/tk-common/utils/codes"
 	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
 	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 // writeRPCReply 统一处理 gRPC 返回并转成 HTTP 响应。
@@ -53,5 +55,37 @@ func writeRPCReply(w http.ResponseWriter, resp *tkv1.JsonDataReply, err error) {
 		}
 	}
 	// 标准成功响应。
+	httpresp.OK(w, data)
+}
+
+// writeTypedProtoReply 统一处理 typed gRPC response 并转成 HTTP 响应。
+func writeTypedProtoReply(w http.ResponseWriter, code int32, msg string, payload proto.Message, err error) {
+	if err != nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamUnavailable, "upstream service unavailable")
+		return
+	}
+	if code != 0 {
+		httpresp.BizFail(w, int(code), strings.TrimSpace(msg))
+		return
+	}
+
+	data := map[string]interface{}{}
+	if payload != nil {
+		raw, marshalErr := protojson.MarshalOptions{
+			UseProtoNames:   true,
+			EmitUnpopulated: true,
+		}.Marshal(payload)
+		if marshalErr != nil {
+			httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamBadPayload, "invalid upstream payload")
+			return
+		}
+		if len(raw) > 0 && string(raw) != "null" {
+			if err := json.Unmarshal(raw, &data); err != nil {
+				httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamBadPayload, "invalid upstream payload")
+				return
+			}
+		}
+	}
+
 	httpresp.OK(w, data)
 }

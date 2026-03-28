@@ -1,17 +1,34 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
+	"google.golang.org/grpc"
 )
+
+// expertUserClient 定义高手榜模块依赖的用户域接口。
+type expertUserClient interface {
+	ExpertBoards(ctx context.Context, in *tkv1.ExpertBoardsRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+}
+
+// ExpertHandler 负责高手榜相关接口。
+type ExpertHandler struct {
+	user expertUserClient
+}
+
+// NewExpertHandler 创建高手榜模块处理器。
+func NewExpertHandler(user expertUserClient) *ExpertHandler {
+	return &ExpertHandler{user: user}
+}
 
 // ExpertBoards 高手推荐榜单接口。
 // 路径策略：
 // 1) 主路径：/public/user/expert-boards；
 // 2) 兼容别名：/public/forum/expert-boards。
-func (h *PublicHandler) ExpertBoards(w http.ResponseWriter, r *http.Request) {
+func (h *ExpertHandler) ExpertBoards(w http.ResponseWriter, r *http.Request) {
 	// 兼容别名命中时，回传迁移提示头，便于调用方逐步切换。
 	if strings.Contains(r.URL.Path, "/public/forum/") {
 		// 调用w.Header完成当前处理。
@@ -28,7 +45,7 @@ func (h *PublicHandler) ExpertBoards(w http.ResponseWriter, r *http.Request) {
 	lotteryCode := strings.TrimSpace(r.URL.Query().Get("lottery_code"))
 
 	// 转发到用户域 RPC。
-	resp, err := h.svcCtx.User.ExpertBoards(r.Context(), &tkv1.ExpertBoardsRequest{
+	resp, err := h.user.ExpertBoards(r.Context(), &tkv1.ExpertBoardsRequest{
 		// 调用int32完成当前处理。
 		Limit: int32(limit),
 		// 处理当前语句逻辑。

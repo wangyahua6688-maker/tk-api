@@ -35,6 +35,25 @@ tk-api/
 2. `cd ../tk-business && go run . -f etc/business.yaml`
 3. `cd ../tk-api && go run . -f etc/tk-api.yaml`
 
+## 本地开发配置
+
+本地直连联调时，请使用下面 3 个专用配置：
+
+1. `../tk-user/etc/user.local.yaml`
+2. `../tk-business/etc/business.local.yaml`
+3. `./etc/tk-api.local.yaml`
+
+推荐启动顺序：
+
+1. `make run-local-user`
+2. `make run-local-business`
+3. `make run-local-bff`
+
+接口烟雾测试：
+
+1. `make smoke-local`
+2. 或 `./scripts/smoke_local.sh http://127.0.0.1:8088`
+
 ## 协议与模型拆分说明
 
 - `tk-proto` 独立的原因：

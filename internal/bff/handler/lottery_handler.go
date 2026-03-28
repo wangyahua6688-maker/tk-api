@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,14 +10,38 @@ import (
 	"github.com/wangyahua6688-maker/tk-common/utils/codes"
 	"github.com/wangyahua6688-maker/tk-common/utils/httpresp"
 	tkv1 "github.com/wangyahua6688-maker/tk-proto/gen/go/tk/v1"
+	"google.golang.org/grpc"
 )
 
+// lotteryBusinessClient 定义开奖模块依赖的业务域接口。
+type lotteryBusinessClient interface {
+	ListCards(ctx context.Context, in *tkv1.ListCardsRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	LotteryDashboard(ctx context.Context, in *tkv1.IDRequest, opts ...grpc.CallOption) (*tkv1.LotteryDashboardReply, error)
+	DrawHistory(ctx context.Context, in *tkv1.DrawHistoryRequest, opts ...grpc.CallOption) (*tkv1.LotteryHistoryReply, error)
+	DrawDetail(ctx context.Context, in *tkv1.IDRequest, opts ...grpc.CallOption) (*tkv1.LotteryDrawDetailReply, error)
+	LotteryDetail(ctx context.Context, in *tkv1.IDRequest, opts ...grpc.CallOption) (*tkv1.LotteryDetailReply, error)
+	LotteryHistory(ctx context.Context, in *tkv1.IDRequest, opts ...grpc.CallOption) (*tkv1.LotteryHistoryReply, error)
+	LotteryResults(ctx context.Context, in *tkv1.IDRequest, opts ...grpc.CallOption) (*tkv1.LotteryDetailReply, error)
+	VoteRecord(ctx context.Context, in *tkv1.VoteRecordRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+	Vote(ctx context.Context, in *tkv1.VoteRequest, opts ...grpc.CallOption) (*tkv1.JsonDataReply, error)
+}
+
+// LotteryHandler 负责彩票详情、开奖、投票等接口。
+type LotteryHandler struct {
+	business lotteryBusinessClient
+}
+
+// NewLotteryHandler 创建彩票模块处理器。
+func NewLotteryHandler(business lotteryBusinessClient) *LotteryHandler {
+	return &LotteryHandler{business: business}
+}
+
 // LotteryCards 彩种列表接口：按 category 返回彩种封面卡片。
-func (h *PublicHandler) LotteryCards(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) LotteryCards(w http.ResponseWriter, r *http.Request) {
 	// 读取前端传入的分类标识（为空表示默认分类）。
 	category := strings.TrimSpace(r.URL.Query().Get("category"))
 	// 将 HTTP 请求映射为业务域 gRPC 请求。
-	resp, err := h.svcCtx.Business.ListCards(r.Context(), &tkv1.ListCardsRequest{
+	resp, err := h.business.ListCards(r.Context(), &tkv1.ListCardsRequest{
 		// 处理当前语句逻辑。
 		Category: category,
 	})
@@ -25,7 +50,7 @@ func (h *PublicHandler) LotteryCards(w http.ResponseWriter, r *http.Request) {
 }
 
 // LotteryDashboard 开奖看板接口：用于首页开奖区/开奖现场页头部数据展示。
-func (h *PublicHandler) LotteryDashboard(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) LotteryDashboard(w http.ResponseWriter, r *http.Request) {
 	// 从路径中提取 special lottery id。
 	id, ok := mustPathID(w, r, "special-lotteries")
 	// 判断条件并进入对应分支逻辑。
@@ -34,13 +59,20 @@ func (h *PublicHandler) LotteryDashboard(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	// 调用业务服务获取开奖看板。
-	resp, err := h.svcCtx.Business.LotteryDashboard(r.Context(), &tkv1.IDRequest{Id: id})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	resp, err := h.business.LotteryDashboard(r.Context(), &tkv1.IDRequest{Id: id})
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // DrawHistory 开奖区历史开奖接口（按彩种维度）。
-func (h *PublicHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
 	// 提取彩种 ID。
 	id, ok := mustPathID(w, r, "special-lotteries")
 	// 判断条件并进入对应分支逻辑。
@@ -55,7 +87,7 @@ func (h *PublicHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
 	// 定义并初始化当前变量。
 	limit := parseIntOrDefault(strings.TrimSpace(r.URL.Query().Get("limit")), 80)
 	// 定义并初始化当前变量。
-	resp, err := h.svcCtx.Business.DrawHistory(r.Context(), &tkv1.DrawHistoryRequest{
+	resp, err := h.business.DrawHistory(r.Context(), &tkv1.DrawHistoryRequest{
 		// 处理当前语句逻辑。
 		SpecialLotteryId: id,
 		// 处理当前语句逻辑。
@@ -65,12 +97,19 @@ func (h *PublicHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
 		// 调用int32完成当前处理。
 		Limit: int32(limit),
 	})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // DrawDetail 开奖区开奖详情接口（按开奖记录ID查询）。
-func (h *PublicHandler) DrawDetail(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) DrawDetail(w http.ResponseWriter, r *http.Request) {
 	// 定义并初始化当前变量。
 	id, ok := mustPathID(w, r, "draw-records")
 	// 判断条件并进入对应分支逻辑。
@@ -79,13 +118,20 @@ func (h *PublicHandler) DrawDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 定义并初始化当前变量。
-	resp, err := h.svcCtx.Business.DrawDetail(r.Context(), &tkv1.IDRequest{Id: id})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	resp, err := h.business.DrawDetail(r.Context(), &tkv1.IDRequest{Id: id})
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // LotteryDetail 彩票详情接口：返回大图、投票、评论分组、推荐图纸等详情页核心数据。
-func (h *PublicHandler) LotteryDetail(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) LotteryDetail(w http.ResponseWriter, r *http.Request) {
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -94,13 +140,20 @@ func (h *PublicHandler) LotteryDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 调用业务域详情聚合接口。
-	resp, err := h.svcCtx.Business.LotteryDetail(r.Context(), &tkv1.IDRequest{Id: id})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	resp, err := h.business.LotteryDetail(r.Context(), &tkv1.IDRequest{Id: id})
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // LotteryHistory 历史开奖接口：返回当前彩种的多期开奖记录。
-func (h *PublicHandler) LotteryHistory(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) LotteryHistory(w http.ResponseWriter, r *http.Request) {
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -109,13 +162,20 @@ func (h *PublicHandler) LotteryHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 转发到业务域历史开奖接口。
-	resp, err := h.svcCtx.Business.LotteryHistory(r.Context(), &tkv1.IDRequest{Id: id})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	resp, err := h.business.LotteryHistory(r.Context(), &tkv1.IDRequest{Id: id})
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // LotteryResults 结果接口：当前与详情接口数据结构保持一致，便于前端复用。
-func (h *PublicHandler) LotteryResults(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) LotteryResults(w http.ResponseWriter, r *http.Request) {
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -124,13 +184,20 @@ func (h *PublicHandler) LotteryResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 业务域内部会复用详情逻辑。
-	resp, err := h.svcCtx.Business.LotteryResults(r.Context(), &tkv1.IDRequest{Id: id})
-	// 调用writeRPCReply完成当前处理。
-	writeRPCReply(w, resp, err)
+	resp, err := h.business.LotteryResults(r.Context(), &tkv1.IDRequest{Id: id})
+	if err != nil {
+		writeTypedProtoReply(w, 0, "", nil, err)
+		return
+	}
+	if resp == nil {
+		httpresp.Fail(w, http.StatusBadGateway, codes.UpstreamEmptyReply, "empty upstream response")
+		return
+	}
+	writeTypedProtoReply(w, resp.GetCode(), resp.GetMsg(), resp.GetData(), nil)
 }
 
 // VoteRecord 查询当前设备投票记录。
-func (h *PublicHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -139,7 +206,7 @@ func (h *PublicHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 采集客户端指纹信息，用于查询当前设备是否已投票。
-	resp, err := h.svcCtx.Business.VoteRecord(r.Context(), &tkv1.VoteRecordRequest{
+	resp, err := h.business.VoteRecord(r.Context(), &tkv1.VoteRecordRequest{
 		// 处理当前语句逻辑。
 		LotteryInfoId: id,
 		// DeviceID 优先从请求头读取，兼容 query 兜底。
@@ -154,7 +221,7 @@ func (h *PublicHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
 }
 
 // Vote 提交投票：入参只接受 option_id。
-func (h *PublicHandler) Vote(w http.ResponseWriter, r *http.Request) {
+func (h *LotteryHandler) Vote(w http.ResponseWriter, r *http.Request) {
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -186,7 +253,7 @@ func (h *PublicHandler) Vote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 将 HTTP 请求转换为 gRPC 投票请求。
-	resp, err := h.svcCtx.Business.Vote(r.Context(), &tkv1.VoteRequest{
+	resp, err := h.business.Vote(r.Context(), &tkv1.VoteRequest{
 		// 处理当前语句逻辑。
 		LotteryInfoId: id,
 		// 处理当前语句逻辑。

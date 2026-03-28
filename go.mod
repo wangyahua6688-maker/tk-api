@@ -2,7 +2,7 @@ module tk-api
 
 go 1.24
 
-//replace github.com/wangyahua6688-maker/tk-proto => ../tk-proto
+replace github.com/wangyahua6688-maker/tk-proto => ../tk-proto
 //replace github.com/wangyahua6688-maker/tk-common => ../tk-common
 
 require (
