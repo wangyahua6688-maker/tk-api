@@ -24,7 +24,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/wangyahua6688-maker/tk-common v1.0.7
-	github.com/wangyahua6688-maker/tk-proto v1.0.3
+	github.com/wangyahua6688-maker/tk-proto v1.0.4
 	github.com/zeromicro/go-zero v1.10.0
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
