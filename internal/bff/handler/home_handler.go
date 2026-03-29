@@ -28,9 +28,6 @@ func NewHomeHandler(business homeBusinessClient) *HomeHandler {
 
 // HomeOverview 首页聚合接口：返回 banner、广播、切换彩种、外链等首页结构化数据。
 func (h *HomeHandler) HomeOverview(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/home")
-	}
 	// 首页能力已并入 business 服务，BFF 直接调用业务域 RPC。
 	resp, err := h.business.HomeOverview(r.Context(), &tkv1.HomeOverviewRequest{})
 	// 调用writeRPCReply完成当前处理。
@@ -39,9 +36,6 @@ func (h *HomeHandler) HomeOverview(w http.ResponseWriter, r *http.Request) {
 
 // LotteryCategories 图库分类搜索接口：支持 keyword 模糊筛选分类。
 func (h *HomeHandler) LotteryCategories(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-categories")
-	}
 	// 定义并初始化当前变量。
 	keyword := strings.TrimSpace(r.URL.Query().Get("keyword"))
 	// 定义并初始化当前变量。
@@ -55,9 +49,6 @@ func (h *HomeHandler) LotteryCategories(w http.ResponseWriter, r *http.Request) 
 
 // LiveScenePage 开奖现场聚合接口：一次返回整页渲染数据。
 func (h *HomeHandler) LiveScenePage(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/live-scene")
-	}
 	// 支持可选 query：special_lottery_id。
 	sid := parseIntOrDefault(strings.TrimSpace(r.URL.Query().Get("special_lottery_id")), 0)
 	// 定义并初始化当前变量。

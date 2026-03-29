@@ -38,9 +38,6 @@ func NewLotteryHandler(business lotteryBusinessClient) *LotteryHandler {
 
 // LotteryCards 彩种列表接口：按 category 返回彩种封面卡片。
 func (h *LotteryHandler) LotteryCards(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-cards")
-	}
 	// 读取前端传入的分类标识（为空表示默认分类）。
 	category := strings.TrimSpace(r.URL.Query().Get("category"))
 	// 将 HTTP 请求映射为业务域 gRPC 请求。
@@ -54,9 +51,6 @@ func (h *LotteryHandler) LotteryCards(w http.ResponseWriter, r *http.Request) {
 
 // LotteryDashboard 开奖看板接口：用于首页开奖区/开奖现场页头部数据展示。
 func (h *LotteryHandler) LotteryDashboard(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/special-lotteries/:id/dashboard")
-	}
 	// 从路径中提取 special lottery id。
 	id, ok := mustPathID(w, r, "special-lotteries")
 	// 判断条件并进入对应分支逻辑。
@@ -79,9 +73,6 @@ func (h *LotteryHandler) LotteryDashboard(w http.ResponseWriter, r *http.Request
 
 // DrawHistory 开奖区历史开奖接口（按彩种维度）。
 func (h *LotteryHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/special-lotteries/:id/history")
-	}
 	// 提取彩种 ID。
 	id, ok := mustPathID(w, r, "special-lotteries")
 	// 判断条件并进入对应分支逻辑。
@@ -119,9 +110,6 @@ func (h *LotteryHandler) DrawHistory(w http.ResponseWriter, r *http.Request) {
 
 // DrawDetail 开奖区开奖详情接口（按开奖记录ID查询）。
 func (h *LotteryHandler) DrawDetail(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/draw-records/:id/detail")
-	}
 	// 定义并初始化当前变量。
 	id, ok := mustPathID(w, r, "draw-records")
 	// 判断条件并进入对应分支逻辑。
@@ -144,9 +132,6 @@ func (h *LotteryHandler) DrawDetail(w http.ResponseWriter, r *http.Request) {
 
 // LotteryDetail 彩票详情接口：返回大图、投票、评论分组、推荐图纸等详情页核心数据。
 func (h *LotteryHandler) LotteryDetail(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-info/:id/detail")
-	}
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -169,9 +154,6 @@ func (h *LotteryHandler) LotteryDetail(w http.ResponseWriter, r *http.Request) {
 
 // LotteryHistory 历史开奖接口：返回当前彩种的多期开奖记录。
 func (h *LotteryHandler) LotteryHistory(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-info/:id/history")
-	}
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -194,9 +176,6 @@ func (h *LotteryHandler) LotteryHistory(w http.ResponseWriter, r *http.Request) 
 
 // LotteryResults 结果接口：当前与详情接口数据结构保持一致，便于前端复用。
 func (h *LotteryHandler) LotteryResults(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-info/:id/results")
-	}
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -219,9 +198,6 @@ func (h *LotteryHandler) LotteryResults(w http.ResponseWriter, r *http.Request) 
 
 // VoteRecord 查询当前设备投票记录。
 func (h *LotteryHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-info/:id/vote-record")
-	}
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。
@@ -246,9 +222,6 @@ func (h *LotteryHandler) VoteRecord(w http.ResponseWriter, r *http.Request) {
 
 // Vote 提交投票：入参只接受 option_id。
 func (h *LotteryHandler) Vote(w http.ResponseWriter, r *http.Request) {
-	if isLegacyBusinessRoute(r.URL.Path) {
-		markDeprecatedRoute(w, "/api/v1/public/business/lottery-info/:id/vote")
-	}
 	// 提取图纸 ID。
 	id, ok := mustPathID(w, r, "lottery-info")
 	// 判断条件并进入对应分支逻辑。

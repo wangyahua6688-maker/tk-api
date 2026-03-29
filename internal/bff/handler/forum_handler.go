@@ -26,21 +26,8 @@ func NewForumHandler(user forumUserClient) *ForumHandler {
 	return &ForumHandler{user: user}
 }
 
-// TopicList 用户域帖子列表接口（旧名兼容，实际走新 ForumTopics RPC）。
-// 路径迁移策略：
-// 1) 新路径：/public/user/topics；
-// 2) 兼容别名：/public/forum/topics。
+// TopicList 用户域帖子列表接口，统一使用 /public/user/topics 路径。
 func (h *ForumHandler) TopicList(w http.ResponseWriter, r *http.Request) {
-	// 兼容别名命中时回传迁移提示，便于前端和网关逐步切换到 /public/user/*。
-	if strings.Contains(r.URL.Path, "/public/forum/") {
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Deprecation", "true")
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Sunset", "Thu, 31 Dec 2026 23:59:59 GMT")
-		// 更新当前变量或字段值。
-		w.Header().Set("Link", "</api/v1/public/user/topics>; rel=\"successor-version\"")
-	}
-
 	// 定义并初始化当前变量。
 	limit := parseIntOrDefault(r.URL.Query().Get("limit"), 20)
 	// 定义并初始化当前变量。
@@ -73,21 +60,8 @@ func (h *ForumHandler) TopicList(w http.ResponseWriter, r *http.Request) {
 	writeRPCReply(w, resp, err)
 }
 
-// TopicDetail 论坛帖子详情接口（新路径 + 兼容别名）。
-// 路径策略：
-// 1) 新路径：/public/user/topics/:id/detail；
-// 2) 兼容别名：/public/forum/topics/:id/detail。
+// TopicDetail 论坛帖子详情接口，统一使用 /public/user/topics/:id/detail 路径。
 func (h *ForumHandler) TopicDetail(w http.ResponseWriter, r *http.Request) {
-	// 命中兼容别名时回传迁移提示头，便于调用方灰度切换。
-	if strings.Contains(r.URL.Path, "/public/forum/") {
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Deprecation", "true")
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Sunset", "Thu, 31 Dec 2026 23:59:59 GMT")
-		// 更新当前变量或字段值。
-		w.Header().Set("Link", "</api/v1/public/user/topics/:id/detail>; rel=\"successor-version\"")
-	}
-
 	// 统一解析帖子ID。
 	postID, ok := mustPathID(w, r, "topics")
 	// 判断条件并进入对应分支逻辑。
@@ -105,21 +79,8 @@ func (h *ForumHandler) TopicDetail(w http.ResponseWriter, r *http.Request) {
 	writeRPCReply(w, resp, err)
 }
 
-// AuthorHistory 论坛作者历史贴列表接口。
-// 路径策略：
-// 1) 新路径：/public/user/users/:id/history-topics；
-// 2) 兼容别名：/public/forum/users/:id/history-topics。
+// AuthorHistory 论坛作者历史贴列表接口，统一使用 /public/user/users/:id/history-topics 路径。
 func (h *ForumHandler) AuthorHistory(w http.ResponseWriter, r *http.Request) {
-	// 命中兼容别名时回传迁移提示头。
-	if strings.Contains(r.URL.Path, "/public/forum/") {
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Deprecation", "true")
-		// 调用w.Header完成当前处理。
-		w.Header().Set("Sunset", "Thu, 31 Dec 2026 23:59:59 GMT")
-		// 更新当前变量或字段值。
-		w.Header().Set("Link", "</api/v1/public/user/users/:id/history-topics>; rel=\"successor-version\"")
-	}
-
 	// 从路径中解析用户ID。
 	userID, ok := mustPathID(w, r, "users")
 	// 判断条件并进入对应分支逻辑。

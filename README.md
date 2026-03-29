@@ -64,21 +64,24 @@ tk-api/
   - `tk-business` 与 `tk-admin` 使用相同表模型，放公共模块可避免重复维护；
   - 字段变更只改一处，降低“模型不一致”引发的线上问题。
 
-## 对外接口（保持 tk-web 兼容）
+## 对外接口
 
 - `GET /health`
-- `GET /api/v1/public/home`
-- `GET /api/v1/public/live-scene`
-- `GET /api/v1/public/lottery-categories`
-- `GET /api/v1/public/user/topics`（主路径）
-- `GET /api/v1/public/forum/topics`（兼容别名）
-- `GET /api/v1/public/lottery-cards`
-- `GET /api/v1/public/special-lotteries/:id/dashboard`
-- `GET /api/v1/public/lottery-info/:id/detail`
-- `GET /api/v1/public/lottery-info/:id/history`
-- `GET /api/v1/public/lottery-info/:id/results`
-- `GET /api/v1/public/lottery-info/:id/vote-record`
-- `POST /api/v1/public/lottery-info/:id/vote`
+- `GET /api/v1/public/business/home`
+- `GET /api/v1/public/business/live-scene`
+- `GET /api/v1/public/business/lottery-categories`
+- `GET /api/v1/public/business/lottery-cards`
+- `GET /api/v1/public/business/special-lotteries/:id/dashboard`
+- `GET /api/v1/public/business/lottery-info/:id/detail`
+- `GET /api/v1/public/business/lottery-info/:id/history`
+- `GET /api/v1/public/business/lottery-info/:id/results`
+- `GET /api/v1/public/business/lottery-info/:id/vote-record`
+- `POST /api/v1/public/business/lottery-info/:id/vote`
+- `GET /api/v1/public/user/topics`
+- `GET /api/v1/public/user/topics/:id/detail`
+- `GET /api/v1/public/user/users/:id/history-topics`
+- `GET /api/v1/public/user/expert-boards`
+- `POST /api/v1/public/user/auth/sms-code`
 
 ## 数据表前缀
 

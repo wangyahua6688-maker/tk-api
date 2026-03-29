@@ -10,6 +10,5 @@ import (
 func RegisterExpertRoutes(server *rest.Server, expert *ExpertHandler) {
 	server.AddRoutes([]rest.Route{
 		{Method: http.MethodGet, Path: "/api/v1/public/user/expert-boards", Handler: expert.ExpertBoards},
-		{Method: http.MethodGet, Path: "/api/v1/public/forum/expert-boards", Handler: expert.ExpertBoards},
 	})
 }

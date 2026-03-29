@@ -7,8 +7,7 @@ import "github.com/zeromicro/go-zero/rest"
 //   - 短信发送 / 注册 / 登录接口统一包装 withIPContext，
 //     将客户端真实 IP 注入 context，供 tk-user 的 IP 维度频控使用
 //   - tk-user 对应路径统一使用 /public/user/* 标记；
-//   - tk-business 对应路径统一使用 /public/business/* 标记，
-//     旧路径继续兼容并返回迁移提示头
+//   - tk-business 对应路径统一使用 /public/business/* 标记
 func RegisterHandlers(server *rest.Server, home *HomeHandler, lottery *LotteryHandler, forum *ForumHandler, expert *ExpertHandler, auth *UserAuthHandler) {
 	RegisterHealthRoutes(server)
 	RegisterHomeRoutes(server, home)
